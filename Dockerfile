@@ -35,4 +35,4 @@ ADD files/nomad-extip-manager.py /usr/local/bin/
 #ADD files/*.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/*
 
-CMD ["/usr/local/bin/nomad-extip-manager.py"]
+CMD ["/usr/bin/python3", "/usr/local/bin/nomad-extip-manager.py"]
