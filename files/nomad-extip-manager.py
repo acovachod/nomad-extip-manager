@@ -19,7 +19,6 @@ n = nomad.Nomad(host=os.getenv("NOMAD_ADDR", "localhost"), port=4646, cert=(os.g
 
 TARGET_TAG = "EXTERNAL_IP"
 RECONNECT_DELAY = 5
-NODE = "pmxc-111"
 SHELL = "/bin/cat"
 #SHELL = "/bin/bash"
 SCRIPT = f"""
@@ -66,7 +65,7 @@ def clear_nat_rules(intip):
 	stdout, stderr = process.communicate(input=script)
 
 	if process.returncode != 0:
-		raise Exception(f"Error setting up NAT rule: {stderr}")
+		raise Exception(f"Error clearing NAT rule: {stderr}")
 
 	logger.debug(f"STDOUT: {stdout}")
 	logger.info(f"Successfully cleared up NAT rules for {intip}")

@@ -1,0 +1,27 @@
+job "test" {
+  datacenters = ["dc1"]
+
+  # Grupo de tareas en modo 'system'
+  group "main" {
+    network {
+#      mode = "bridge"
+    }
+
+    meta {
+      EXTERNAL_IP = "10.10.10.1"
+    }
+
+    task "sample" {
+      driver = "docker"
+      config {
+        image = "busybox:latest"
+        command = "sh"
+        args    = [
+          "/bin/sleep", "infinity"
+        ]
+      }
+    }
+  }
+}
+
+## vim: set ft=nomad sts=2 ts=2 sw=2 et ai:

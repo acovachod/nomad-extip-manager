@@ -1,0 +1,55 @@
+job "extip" {  ##< XXX: Compose label dynamically
+  type        = "system"
+
+#  constraint {
+#    attribute = "${attr.kernel.name}"
+#    value = "linux"
+#  }
+
+  constraint {
+    operator = "distinct_hosts"
+    value    = "true"
+  }
+
+  group "main" {
+    count = 1
+
+    network {
+      mode = "host"   #< XXX: Let's handle native host networing using docker
+    }
+
+    task "nomad-extip-manager" {
+      driver = "docker"
+
+      config {
+        image           = "pruiz/nomad-extip-manager:devel"
+        auth_soft_fail  = true
+        network_mode    = "host"
+   #     cap_add         = [ "NET_ADMIN", "NET_RAW" ]
+        volumes         = [
+   #       "/run/xtables.lock:/run/xtables.lock"
+        ]
+      }
+
+      env {
+        NOMAD_ADDR = "http://host.docker.internal:4646"
+      }
+
+      resources {
+        memory = 512
+      }
+    }
+
+  }
+
+#  update {
+#    stagger           = "5s"
+#    auto_revert       = true
+#    max_parallel      = 1
+#    min_healthy_time  = "5s"
+#    healthy_deadline  = "45s"
+#    progress_deadline = "60s"
+#  }
+}
+
+## vim: set ft=nomad sts=2 ts=2 sw=2 et ai:

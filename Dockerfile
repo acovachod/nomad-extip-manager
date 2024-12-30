@@ -15,10 +15,12 @@ WORKDIR /
 
 RUN yum -y install openssl ca-certificates epel-release
 ## Install core stuff (vault, nomad, terraform, etc.)
-RUN yum -y install \
+RUN yum -y install microdnf \
     git dos2unix which jq vim-enhanced unzip lsb-release \
-    python3 python3-pip python3-setuptools \
+    python3 python3-pip python3-setuptools python3-requests \
     iptables-legacy iptables
+
+RUN pip install python-nomad
 
 ## Use iptables-legacy by default..
 RUN alternatives --set iptables /usr/sbin/iptables-legacy
