@@ -8,6 +8,7 @@ import logging
 import time
 import ipaddress
 import textwrap
+import argparse
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,8 +20,8 @@ n = nomad.Nomad(host=os.getenv("NOMAD_ADDR", "localhost"), port=4646, cert=(os.g
 
 TARGET_TAG = "EXTERNAL_IP"
 RECONNECT_DELAY = 5
-SHELL = "/bin/cat"
-#SHELL = "/bin/bash"
+NODE = os.getenv("NOMAD_NODE", None)
+SHELL = "/bin/bash"
 SCRIPT = f"""
 # First create our chains if there are not yet there. In reverse order.
 for CHAIN in AFTER_EXTERNAL_IP EXTERNAL_IP; do
@@ -92,12 +93,12 @@ def handle_events_(message):
 
 		logger.info(f"Received event from {nodename} for {jobid}/{taskgroup}: {desiredstatus} ({clientstatus})")
 
-		#if jobid != "vicky-agent":
-		#	logger.debug(f"Skipping job {jobid}")
-		#	return
+    if nodename != NODE:
+      logger.debug(f"Skipping event from {nodename} (not {NODE})")
+      return
 
 		if not networkaddress:
-			logger.info(f"Job has no NetworkStatus.Address: {networkaddress}")
+			logger.info(f"Job has no NetworkStatus.Address, skipping..")
 			return
 
 		if clientstatus not in ['pending', 'running', 'complete']:
@@ -189,6 +190,21 @@ def subscribe_to_events():
 
 
 if __name__ == "__main__":
+  global NODE, SHELL
+
+  parser = argparse.ArgumentParser(description="Nomad External IP Manager")
+  parser.add_argument("--shell", default=SHELL, help="Shell to use for running commands")
+  args = parser.parse_args()
+
+  SHELL = args.shell
+
+  if not NODE:
+    logger.error("NOMAD_NODE environment variable missing!")
+    exit(1)
+
+  logger.info(f"Starting Nomad External IP Manager for node {NODE}")
+  logger.info(f"Using shell: {SHELL}")
+
 	subscribe_to_events()
 
 # vim: set syntax=python sts=2 ts=2 sw=2 et ai: #
