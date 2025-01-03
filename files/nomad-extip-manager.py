@@ -93,9 +93,9 @@ def handle_events_(message):
 
 		logger.info(f"Received event from {nodename} for {jobid}/{taskgroup}: {desiredstatus} ({clientstatus})")
 
-    if nodename != NODE:
-      logger.debug(f"Skipping event from {nodename} (not {NODE})")
-      return
+		if nodename != NODE:
+			logger.debug(f"Skipping event from {nodename} (not {NODE})")
+			return
 
 		if not networkaddress:
 			logger.info(f"Job has no NetworkStatus.Address, skipping..")
@@ -190,21 +190,19 @@ def subscribe_to_events():
 
 
 if __name__ == "__main__":
-  global NODE, SHELL
+	parser = argparse.ArgumentParser(description="Nomad External IP Manager")
+	parser.add_argument("--shell", default=SHELL, help="Shell to use for running commands")
+	args = parser.parse_args()
 
-  parser = argparse.ArgumentParser(description="Nomad External IP Manager")
-  parser.add_argument("--shell", default=SHELL, help="Shell to use for running commands")
-  args = parser.parse_args()
+	SHELL = args.shell
 
-  SHELL = args.shell
+	if not NODE:
+		logger.error("NOMAD_NODE environment variable missing!")
+		exit(1)
 
-  if not NODE:
-    logger.error("NOMAD_NODE environment variable missing!")
-    exit(1)
-
-  logger.info(f"Starting Nomad External IP Manager for node {NODE}")
-  logger.info(f"Using shell: {SHELL}")
+	logger.info(f"Starting Nomad External IP Manager for node {NODE}")
+	logger.info(f"Using shell: {SHELL}")
 
 	subscribe_to_events()
 
-# vim: set syntax=python sts=2 ts=2 sw=2 et ai: #
+# vim: set syntax=python sts=2 ts=2 sw=2 noet ai: #
