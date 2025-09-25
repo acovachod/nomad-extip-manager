@@ -34,7 +34,7 @@ for CHAIN in EXTERNAL_IP AFTER_EXTERNAL_IP; do
 	iptables -w -t nat -D POSTROUTING -j $CHAIN 2>/dev/null
 	iptables -w -t nat -I POSTROUTING $order -j $CHAIN
 
-	$order=(($order+1))
+	$order=((order+1))
 done
 """
 
