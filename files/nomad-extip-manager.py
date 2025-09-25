@@ -24,7 +24,6 @@ NODE = os.getenv("NOMAD_NODE", None)
 SHELL = "/bin/bash"
 SCRIPT = f"""
 # First create our chains if there are not yet there. In reverse order.
-order=1
 for CHAIN in EXTERNAL_IP AFTER_EXTERNAL_IP; do
 	if ! iptables -w --numeric -t nat --list $CHAIN >/dev/null 2>&1; then
 		iptables -w -t nat -N $CHAIN
@@ -32,7 +31,7 @@ for CHAIN in EXTERNAL_IP AFTER_EXTERNAL_IP; do
 	fi
 
 	iptables -w -t nat -D POSTROUTING -j $CHAIN 2>/dev/null
-	iptables -w -t nat -I POSTROUTING $order -j $CHAIN
+	iptables -w -t nat -I POSTROUTING -j $CHAIN
 
 	$order=((order+1))
 done
