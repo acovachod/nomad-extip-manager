@@ -24,17 +24,29 @@ NODE = os.getenv("NOMAD_NODE", None)
 SHELL = "/bin/bash"
 SCRIPT = f"""
 # First create our chains if there are not yet there. In reverse order.
-for CHAIN in EXTERNAL_IP AFTER_EXTERNAL_IP; do
+for CHAIN in AFTER_EXTERNAL_IP EXTERNAL_IP; do
 	if ! iptables -w --numeric -t nat --list $CHAIN >/dev/null 2>&1; then
 		iptables -w -t nat -N $CHAIN
 		iptables -w -t nat -A $CHAIN -j RETURN
 	fi
-
-	iptables -w -t nat -D POSTROUTING -j $CHAIN 2>/dev/null
-	iptables -w -t nat -I POSTROUTING -j $CHAIN
-
-	$order=((order+1))
 done
+
+# Make sure EXTERNAL_IP is not in the first position of POSTROUTING chain.
+# If not let's set it as the first one.
+
+exip_position=$(iptables -w --numeric -t nat --list POSTROUTING --line-numbers | awk '$2=="EXTERNAL_IP" {print $1; exit}')
+																										 
+if [ "${exip_position:-}" != 1 ]; then
+	rule_id=$(uuidgen)
+
+	iptables -t nat -I POSTROUTING 1 --comment "NEIM:$rule_id" -j EXTERNAL_IP
+
+	# Erasing leftovers...
+	for position in $(iptables -L POSTROUTING -n -v --line-numbers -t nat | grep -v "${rule_id}" | grep -w 'EXTERNAL_IP' | awk '{print $1}')
+	do
+		iptables -t nat -D POSTROUTING $position
+	done
+fi
 """
 
 
