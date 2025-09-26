@@ -41,8 +41,8 @@ if [ "${exip_position:-}" != 1 ]; then
 
 	iptables -t nat -I POSTROUTING 1 -m comment --comment "NEIM:$rule_id" -j EXTERNAL_IP
 
-	# Erasing leftovers...
-	for position in $(iptables -L POSTROUTING -n -v --line-numbers -t nat | grep -v "${rule_id}" | grep -w 'EXTERNAL_IP' | awk '{print $1}')
+	# Erasing leftovers using sort to avoid index shift...
+	for position in $(iptables -L POSTROUTING -n -v --line-numbers -t nat | grep -v "${rule_id}" | grep -w 'EXTERNAL_IP' | awk '{print $1}' | sort -rn)
 	do
 		iptables -t nat -D POSTROUTING $position
 	done
