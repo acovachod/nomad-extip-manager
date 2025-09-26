@@ -39,7 +39,7 @@ exip_position=$(iptables -w --numeric -t nat --list POSTROUTING --line-numbers |
 if [ "${exip_position:-}" != 1 ]; then
 	rule_id=$(uuidgen)
 
-	iptables -t nat -I POSTROUTING 1 --comment "NEIM:$rule_id" -j EXTERNAL_IP
+	iptables -t nat -I POSTROUTING 1 -m comment --comment "NEIM:$rule_id" -j EXTERNAL_IP
 
 	# Erasing leftovers...
 	for position in $(iptables -L POSTROUTING -n -v --line-numbers -t nat | grep -v "${rule_id}" | grep -w 'EXTERNAL_IP' | awk '{print $1}')
