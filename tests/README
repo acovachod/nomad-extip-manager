@@ -1,7 +1,8 @@
-The main purpose of the scripts within this folder is to make unit tests of all changes related to nomad-extip-manager bash block. Results expected explained in each script.
+These scripts are designed to run unit tests for any changes related to the nomad-extip-manager bash block. Each script explains its expected results.
 
-We need to run the tests under a "scripts" folder which make them all see each other.
+Make sure to run the tests from inside a scripts folder so the scripts can access one another.
 
-For example:
+Example:
 
-docker run -it --name test_nomad_extip_manager --privileged -v "C:\Folder\Which\Stores\Scripts:/scripts" ubuntu:latest bash
+docker run -it --name test_nomad_extip_manager --privileged \
+  -v "C:\Folder\Which\Stores\Scripts:/scripts" ubuntu:latest bash
