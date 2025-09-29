@@ -35,6 +35,7 @@ done
 if ! iptables -t nat -S "POSTROUTING" 2>/dev/null | grep -m1 '^-A[[:space:]]\+'POSTROUTING | grep -q EXTERNAL_IP; then
 	rule_ts="$(date +%s)"
 	iptables -t nat -I POSTROUTING 1 -m comment --comment "NEIM:$rule_ts" -j EXTERNAL_IP
+	# Erasing legacy nomad-extip-manager and docker-extip-manager rules...
 	for neim_rule in $(iptables -L POSTROUTING -n -v -t nat | grep -v "${rule_ts}" | grep -o 'NEIM:[0-9]\+')
 	do
 		iptables -t nat -D POSTROUTING -j EXTERNAL_IP -m comment --comment "$neim_rule"
