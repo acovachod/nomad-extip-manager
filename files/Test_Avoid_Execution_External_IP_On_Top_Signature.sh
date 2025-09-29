@@ -4,7 +4,7 @@
 # In this scenario, the final execution should end without any change
 # given that there would be EXTERNAL_IP with signature on top of the POSTROUTING chain already.
 
-iptables -t nat -F POSTROUTING #< Flushing the current NAT rule
+iptables -t nat -F POSTROUTING #< Flushing current POSTROUTING NAT rules
 
 iptables -w -t nat -I POSTROUTING -j MASQUERADE
 iptables -w -t nat -I POSTROUTING -j EXTERNAL_IP -m comment --comment "NEIM:1234"
