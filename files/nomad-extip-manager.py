@@ -31,20 +31,17 @@ for CHAIN in AFTER_EXTERNAL_IP EXTERNAL_IP; do
 	fi
 done
 
-# Make sure EXTERNAL_IP is not in the first position of POSTROUTING chain.
-# If not let's set it as the first one.
-
-exip_position=$(iptables -w --numeric -t nat --list POSTROUTING --line-numbers | awk '$2=="EXTERNAL_IP" {print $1; exit}')
-																										 
-if [ "${exip_position:-}" != 1 ]; then
-	rule_id=$(uuidgen)
-
-	iptables -t nat -I POSTROUTING 1 -m comment --comment "NEIM:$rule_id" -j EXTERNAL_IP
-
-	# Erasing leftovers using sort to avoid index shift...
-	for position in $(iptables -L POSTROUTING -n -v --line-numbers -t nat | grep -v "${rule_id}" | grep -w 'EXTERNAL_IP' | awk '{print $1}' | sort -rn)
+# Ensure EXTERNAL_IP is first in POSTROUTING
+if ! iptables -t nat -S "POSTROUTING" 2>/dev/null | grep -m1 '^-A[[:space:]]\+'POSTROUTING | grep -q EXTERNAL_IP; then
+	rule_ts="$(date +%s)"
+	iptables -t nat -I POSTROUTING 1 -m comment --comment "NEIM:$rule_ts" -j EXTERNAL_IP
+	for neim_rule in $(iptables -L POSTROUTING -n -v -t nat | grep -v "${rule_timestamp}" | grep -o 'NEIM:[0-9]\+')
 	do
-		iptables -t nat -D POSTROUTING $position
+		iptables -t nat -D POSTROUTING -j EXTERNAL_IP -m comment --comment "$neim_rule"
+	done
+	for rule in $(iptables -L POSTROUTING -n -v -t nat | grep -v 'NEIM' | grep -o 'EXTERNAL_IP')
+	do
+		iptables -t nat -D POSTROUTING -j EXTERNAL_IP
 	done
 fi
 """
