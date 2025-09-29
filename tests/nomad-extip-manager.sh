@@ -6,7 +6,6 @@ for CHAIN in AFTER_EXTERNAL_IP EXTERNAL_IP; do
 	fi
 done
 
-# Ensure EXTERNAL_IP is first in POSTROUTING
 ts=`date +%s`
 
 iptables -t nat -S POSTROUTING | head -n 2 | grep -F -- '-j EXTERNAL_IP' && exit 0 	#< If jump rule exists (at 1st position), we are done
