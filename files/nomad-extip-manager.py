@@ -32,19 +32,17 @@ for CHAIN in AFTER_EXTERNAL_IP EXTERNAL_IP; do
 done
 
 # Ensure EXTERNAL_IP is first in POSTROUTING
-if ! iptables -t nat -S "POSTROUTING" 2>/dev/null | grep -m1 '^-A[[:space:]]\+'POSTROUTING | grep -q EXTERNAL_IP; then
-	rule_ts="$(date +%s)"
-	iptables -t nat -I POSTROUTING 1 -m comment --comment "NEIM:$rule_ts" -j EXTERNAL_IP
-	# Erasing legacy nomad-extip-manager and docker-extip-manager rules...
-	for neim_rule in $(iptables -L POSTROUTING -n -v -t nat | grep -v "$rule_ts" | grep -o 'NEIM:[0-9]\+')
-	do
-		iptables -t nat -D POSTROUTING -j EXTERNAL_IP -m comment --comment "$neim_rule"
-	done
-	for rule in $(iptables -L POSTROUTING -n -v -t nat | grep -v 'NEIM' | grep -o 'EXTERNAL_IP')
-	do
-		iptables -t nat -D POSTROUTING -j EXTERNAL_IP
-	done
-fi
+ts=`date +%s`
+
+iptables -w -t nat -S POSTROUTING | head -n 2 | grep -F -- '-j EXTERNAL_IP' && exit 0 		#< If jump rule exists (at 1st position), we are done
+iptables -w -t nat -I POSTROUTING 1 -m comment --comment "NEIM:$ts" -j EXTERNAL_IP 	#< Insert jump to our target (at 1st position)
+iptables -w -t nat -D POSTROUTING -j EXTERNAL_IP || :										#< Delete (potential) existing jump rule w/o signature
+
+# Erasing legacy nomad-extip-manager and docker-extip-manager rules...
+for sig in `iptables -S POSTROUTING -t nat | grep -Fv "NEIM:$ts" | grep -o 'NEIM:[0-9]\+'`
+do
+	iptables -w -t nat -D POSTROUTING -j EXTERNAL_IP -m comment --comment "$sig"
+done
 """
 
 
