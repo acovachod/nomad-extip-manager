@@ -33,7 +33,6 @@ done
 
 ts=`date +%s`
 
-iptables -w -t nat -S POSTROUTING | head -n 2 | grep -F -- '-j EXTERNAL_IP' && exit 0 		#< If jump rule exists (at 1st position), we are done
 iptables -w -t nat -I POSTROUTING 1 -m comment --comment "NEIM:$ts" -j EXTERNAL_IP 			#< Insert jump to our target (at 1st position)
 while iptables -t nat -D POSTROUTING -j EXTERNAL_IP >/dev/null 2>&1; do :; done				#< Delete (potential) existing jump rule w/o signature
 
